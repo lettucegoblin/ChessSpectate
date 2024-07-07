@@ -172,15 +172,13 @@
   }
 </script>
 
-<select bind:value={selectedRoom} on:change={() => joinRoom(selectedRoom)}>
+
+<label for="rooms">Select a room:</label>
+<select id="rooms" bind:value={selectedRoom} on:change={() => joinRoom(selectedRoom)}>
   {#each rooms as room}
     <option value={room.id}>{room.name}</option>
   {/each}
 </select>
-
-<input type="text" bind:value={inputRoomName} placeholder="Enter room name" />
-
-<button on:click={createRoom}>Create Room</button>
 
 <div class="chessboard">
   <div>Playing as {playingAs ? "White" : "Black"}
