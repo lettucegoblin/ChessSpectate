@@ -17,7 +17,7 @@
     from: string;
     to: string;
     type: string;
-    id: string;
+    from_id: string;
   }
 
   let socket: Socket;
@@ -31,11 +31,29 @@
   let fen: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
   onMount(() => {
-    // Initialize socket connection
-    socket = io("http://localhost:3000");
+    // Chess Events
+    chessground.getState().drawable.onChange = (shapes: DrawShape[]) => {
+      console.log("Chessground state changed", shapes);
+      let userShapes = allShapesThatAreMe(chessground.getState());
+      let markingsData = chessgroundShapesToMarkings(userShapes);
+      //socket.emit("markingsData", {selectedRoom, markingsData});
+      socket.emit("markingsData", { room: selectedRoom, markings: markingsData });
+    }
+
+
+    // Initialize socket connection, infinite reconnect
+    socket = io("http://localhost:3000", {
+      transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      randomizationFactor: 0
+    });
 
     // Fetch available rooms from the relay server
     socket.on("connect", () => {
+      console.log("Connected to server", socket.id);
       socket.emit("requestRooms");
     });
 
@@ -52,13 +70,18 @@
     });
 
     // Handle incoming marking data
-    socket.on("markingsData", (markingsData: Marking[]) => {
-
-      let userShapes = allShapesThatArentPurple(chessground.getState());
+    socket.on("markingsData", (markingsData: Marking[], from_id: string) => {
+      if (from_id == socket.id) {
+        return;
+      }
+      let userShapes = allShapesThatAreMe(chessground.getState());
       clearShapes();
       for (const marking of markingsData) {
+        if(marking.from_id == socket.id) {
+          continue;
+        }
         console.log(`Marking: ${marking.from} -> ${marking.to}`);
-        addArrow(marking.from, marking.to, "purple");
+        addArrow(marking.from, marking.to, "purple", marking.from_id);
       }
       for (const shape of userShapes) {
         addArrow(shape.orig, shape.dest, shape.brush);
@@ -72,8 +95,20 @@
     };
   });
 
-  function allShapesThatArentPurple(state: any) {
-    return state.drawable.shapes.filter((shape: any) => shape.brush !== "purple");
+  // Ideally this would be a selector function in a store because it's a pure function
+  function allShapesThatAreMe(state: any) {
+    return state.drawable.shapes.filter((shape: any) => shape.label == undefined);
+  }
+
+  function chessgroundShapesToMarkings(shapes: DrawShape[]) {
+    return shapes.map((shape) => {
+      return {
+        from: shape.orig,
+        to: shape.dest,
+        type: "arrow",
+        from_id: socket.id
+      };
+    });
   }
 
   // Join the selected room
@@ -91,12 +126,19 @@
   }
 
   // Example function to add an arrow
-  function addArrow(from: any, to: any, color: string) {
-    const arrow: DrawShape = {
+  function addArrow(from: any, to: any, color: string, from_id: string = "") {
+    
+    let arrow: DrawShape = {
       orig: from,
       dest: to,
-      brush: color,
+      brush: color
     };
+
+    if(from_id) {
+      arrow.label = {
+        text: from_id
+      }
+    }
     shapes.push(arrow);
     if (chessground) {
       chessground.setShapes(shapes);

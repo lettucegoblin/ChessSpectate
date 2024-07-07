@@ -24,6 +24,7 @@ document.addEventListener('fenFromPage', function (e) {
   });
 });
 
+// Listen for markings from the page
 document.addEventListener('markingsFromPage', function (e) {
   console.log('Markings from page:', e.detail.markings);
   if(!_lastTabId) return;
@@ -39,6 +40,7 @@ document.addEventListener('markingsFromPage', function (e) {
 
 // Get the tab ID and FEN from the chess.com board
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('Received message from the background script:', request);
   if (request.message === 'getFen') {
     _lastTabId = request.tabId;
 
@@ -51,6 +53,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
 
     sendResponse({ status: 'FEN sent' });
+  } else if (request.message === 'markingsData') {
+    console.log('Received markings data from the background script', request.markings);
+    document.dispatchEvent(new CustomEvent('markingsFromBackground', { detail: { markings: request.markings } }));
   }
 });
 
