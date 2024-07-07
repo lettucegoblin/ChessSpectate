@@ -28,6 +28,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // Send FEN data to the relay server
     socket.emit('fenData', { room: tabId, fen });
+  } else if (request.message === 'sendMarkings') {
+    const { tabId, markings } = request.payload;
+    console.log('Sending markings data to the relay server', tabId, markings);
+
+    // Send markings data to the relay server
+    socket.emit('markingsData', { room: tabId, markings });
   }
 });
 

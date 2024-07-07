@@ -14,11 +14,25 @@ let _lastTabId = '';
 document.addEventListener('fenFromPage', function (e) {
   _lastFen = e.detail.fen;
   if(!_lastTabId) return;
+
   chrome.runtime.sendMessage({
     message: 'sendFen',
     payload: {
       tabId: _lastTabId,
       fen: _lastFen,
+    },
+  });
+});
+
+document.addEventListener('markingsFromPage', function (e) {
+  console.log('Markings from page:', e.detail.markings);
+  if(!_lastTabId) return;
+
+  chrome.runtime.sendMessage({
+    message: 'sendMarkings',
+    payload: {
+      tabId: _lastTabId,
+      markings: e.detail.markings,
     },
   });
 });

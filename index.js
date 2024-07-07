@@ -58,6 +58,11 @@ io.on('connection', (socket) => {
     io.to(room).emit('fenData', fen);
   });
 
+  // Relay markings data to the appropriate room
+  socket.on('markingsData', ({ room, markings }) => {
+    io.to(room).emit('markingsData', markings);
+  });
+
   // Handle creating new rooms
   socket.on('createRoom', (tabId) => {
     rooms[tabId] = {
