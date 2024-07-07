@@ -2,11 +2,14 @@ let ourMarkings = [];
 
 setInterval(() => {
   let game = document.querySelector(".board").game;
+  let state = JSON.parse(JSON.stringify(document.querySelector(".board").state));
+
   if (game) {
     //if(window.lastFen === game.fen) return;
     let fen = game.getFEN();
+  
     window.lastFen = fen;
-    sendToContentScript("fenFromPage", { fen });
+    sendToContentScript("fenFromPage", { fen, state});
 
     let markings = getAllMarkings(); // our markings
     if (isThereAnyMarkingChange(markings)) {

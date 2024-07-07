@@ -62,7 +62,7 @@ io.on("connection", (socket) => {
     }
     socket.join(room);
     // send fen data to the client
-    socket.emit("fenData", rooms[room].fen);
+    socket.emit("fenData", rooms[room].fen, rooms[room].state);
 
     sendMarkingsData(room, socket.id);
   });
@@ -74,10 +74,11 @@ io.on("connection", (socket) => {
   });
 
   // Relay FEN data to the appropriate room
-  socket.on("fenData", ({ room, fen }) => {
+  socket.on("fenData", ({ room, fen, state }) => {
     if (rooms[room]) {
       rooms[room].fen = fen;
-      io.to(room).emit("fenData", fen);
+      rooms[room].state = state;
+      io.to(room).emit("fenData", rooms[room].fen, rooms[room].state);
     }
   });
 

@@ -25,6 +25,7 @@
   let selectedRoom: string = "";
   let inputRoomName: string = "";
   let currentRoom: string = "";
+  let playingAs: 0 | 1 = 0;
 
   // Chess
   let orientation: Orientation = "white";
@@ -38,6 +39,15 @@
       let markingsData = chessgroundShapesToMarkings(userShapes);
       //socket.emit("markingsData", {selectedRoom, markingsData});
       socket.emit("markingsData", { room: selectedRoom, markings: markingsData });
+    }
+
+    chessground.getState().events.change = () => {
+      console.log("Chessground state changed", chessground.getState());
+      let oldfen = fen
+      fen = chessground.getFen();
+      setTimeout(() => {
+        fen = oldfen;
+      }, 0);
     }
 
 
@@ -63,10 +73,18 @@
     });
 
     // Handle incoming FEN data
-    socket.on("fenData", (incomingFen: string) => {
+    socket.on("fenData", (incomingFen: string, state: any) => {
       // Update your chessboard with the FEN data
-      console.log(`FEN Data: ${incomingFen}`);
+      console.log(`FEN Data: ${incomingFen} ${state.isFlipped} ${state.playingAs}`);
       fen = incomingFen;
+
+      // update orientation with state.isFlipped
+      orientation = state.isFlipped ? "black" : "white";
+
+      // update playingAs with state.playingAs
+      playingAs = state.playingAs;
+
+      
     });
 
     // Handle incoming marking data
@@ -165,8 +183,10 @@
 <button on:click={createRoom}>Create Room</button>
 
 <div class="chessboard">
+  <div>Playing as {playingAs ? "White" : "Black"}
+  </div>
   <!-- Chessground component -->
-  <Chessground bind:this={chessground} {fen} />
+  <Chessground bind:this={chessground} {fen} {orientation}/>
 </div>
 
 <style>

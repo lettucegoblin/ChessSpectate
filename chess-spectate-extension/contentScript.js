@@ -13,6 +13,7 @@ let _lastTabId = '';
 
 document.addEventListener('fenFromPage', function (e) {
   _lastFen = e.detail.fen;
+  _state = e.detail.state;
   if(!_lastTabId) return;
 
   chrome.runtime.sendMessage({
@@ -20,6 +21,7 @@ document.addEventListener('fenFromPage', function (e) {
     payload: {
       tabId: _lastTabId,
       fen: _lastFen,
+      state: _state
     },
   });
 });

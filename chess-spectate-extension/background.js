@@ -35,11 +35,11 @@ socket.on("markingsData", (markings, room) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "sendFen") {
-    const { tabId, fen } = request.payload;
+    const { tabId, fen, state } = request.payload;
     //console.log("Sending FEN data to the relay server", tabId, fen);
 
     // Send FEN data to the relay server
-    socket.emit("fenData", { room: tabId, fen });
+    socket.emit("fenData", { room: tabId, fen, state });
   } else if (request.message === "sendMarkings") {
     const { tabId, markings } = request.payload;
     for (let marking of markings) {
