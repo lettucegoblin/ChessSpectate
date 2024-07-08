@@ -37,19 +37,17 @@
       console.log("Chessground state changed", shapes);
       let userShapes = allShapesThatAreMe(chessground.getState());
       let markingsData = chessgroundShapesToMarkings(userShapes);
-      //socket.emit("markingsData", {selectedRoom, markingsData});
       socket.emit("markingsData", { room: selectedRoom, markings: markingsData });
     }
 
     chessground.getState().events.change = () => {
       console.log("Chessground state changed", chessground.getState());
-      let oldfen = fen
+      let oldfen = fen;
       fen = chessground.getFen();
       setTimeout(() => {
         fen = oldfen;
       }, 0);
     }
-
 
     // Initialize socket connection, infinite reconnect
     socket = io("http://localhost:3000", {
@@ -83,8 +81,6 @@
 
       // update playingAs with state.playingAs
       playingAs = state.playingAs;
-
-      
     });
 
     // Handle incoming marking data
@@ -95,7 +91,7 @@
       let userShapes = allShapesThatAreMe(chessground.getState());
       clearShapes();
       for (const marking of markingsData) {
-        if(marking.from_id == socket.id) {
+        if (marking.from_id == socket.id) {
           continue;
         }
         console.log(`Marking: ${marking.from} -> ${marking.to}`);
@@ -145,14 +141,13 @@
 
   // Example function to add an arrow
   function addArrow(from: any, to: any, color: string, from_id: string = "") {
-    
     let arrow: DrawShape = {
       orig: from,
       dest: to,
       brush: color
     };
 
-    if(from_id) {
+    if (from_id) {
       arrow.label = {
         text: from_id
       }
@@ -172,24 +167,29 @@
   }
 </script>
 
+<div class="min-h-screen bg-gray-900 text-white">
+  <div class="container mx-auto p-4">
+    <label for="rooms" class="block text-sm font-medium text-gray-300">Select a room:</label>
+    <select id="rooms" bind:value={selectedRoom} on:change={() => joinRoom(selectedRoom)} class="block w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300">
+      {#each rooms as room}
+        <option value={room.id} class="bg-gray-800 text-gray-300">{room.name}</option>
+      {/each}
+    </select>
 
-<label for="rooms">Select a room:</label>
-<select id="rooms" bind:value={selectedRoom} on:change={() => joinRoom(selectedRoom)}>
-  {#each rooms as room}
-    <option value={room.id}>{room.name}</option>
-  {/each}
-</select>
-
-<div class="chessboard">
-  <div>Playing as {playingAs ? "White" : "Black"}
+    <div class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4">
+      <div class="text-center mb-4">Playing as {playingAs ? "White" : "Black"}</div>
+      <!-- Chessground component -->
+      <Chessground bind:this={chessground} {fen} {orientation}/>
+    </div>
   </div>
-  <!-- Chessground component -->
-  <Chessground bind:this={chessground} {fen} {orientation}/>
 </div>
 
 <style>
+
+  .container {
+    height: 100vh;
+  }
   .chessboard {
-    width: 400px;
-    height: 400px;
+    align-items: flex-start;
   }
 </style>

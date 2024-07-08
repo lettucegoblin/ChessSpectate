@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.chessboard > .cg-wrap {
+  width: 100% !important;
+  height: auto;
+  max-width: 80vw;
+  
+}
+
+
+@media (min-width: 1000px) {
+  .chessboard > .cg-wrap {
+    width: auto !important;
+    height: 80vh;
+    max-height: 80vh;
+    max-width: auto;
+  }
+}
