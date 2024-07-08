@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
+require('dotenv').config();
 
 const app = express();
 // cors
@@ -129,8 +130,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log("Relay server listening on port 3000");
+server.listen(process.env.PORT || 3000, () => {
+  console.log(`Relay server listening on port ${process.env.PORT || 3000}`);
 });
 
 function simulateSetup() {

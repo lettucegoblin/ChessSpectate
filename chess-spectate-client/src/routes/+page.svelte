@@ -3,7 +3,8 @@
   import io, { Socket } from "socket.io-client";
   import { Chessground } from "svelte-chessground"; // https://github.com/lichess-org/chessground/blob/master/src/config.ts
   import type { DrawShape } from "chessground/draw";
-  import e from "cors";
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log("API URL:", apiUrl);
 
   let chessground: Chessground;
   let shapes: DrawShape[] = [];
@@ -75,7 +76,7 @@
     };
 
     // Initialize socket connection, infinite reconnect
-    socket = io("http://localhost:3000", {
+    socket = io(apiUrl, {
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -128,10 +129,9 @@
         }
       }
       for (const shape of userShapes) {
-        if (shape.dest != undefined)
+        if (shape.dest == undefined)
           addHighlight(shape.orig, "purple", socket.id);
-        else
-          addArrow(shape.orig, shape.dest, shape.brush);
+        else addArrow(shape.orig, shape.dest, shape.brush);
       }
       console.log("state", chessground.getState());
     });
@@ -229,7 +229,10 @@
 
 <div class="min-h-screen bg-gray-900 text-white">
   <div class="container mx-auto p-4">
-    <button class="bg-gray-800 text-white px-4 py-2 rounded-md" on:click={() => addHighlight('e2', 'green')}>Add Highlight</button>
+    <button
+      class="bg-gray-800 text-white px-4 py-2 rounded-md"
+      on:click={() => addHighlight("e2", "green")}>Add Highlight</button
+    >
     <label for="rooms" class="block text-sm font-medium text-gray-300"
       >Select a room:</label
     >
