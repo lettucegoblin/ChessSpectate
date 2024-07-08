@@ -2,14 +2,16 @@ let ourMarkings = [];
 
 setInterval(() => {
   let game = document.querySelector(".board").game;
-  let state = JSON.parse(JSON.stringify(document.querySelector(".board").state));
+  let state = JSON.parse(
+    JSON.stringify(document.querySelector(".board").state)
+  );
 
   if (game) {
     //if(window.lastFen === game.fen) return;
     let fen = game.getFEN();
-  
+
     window.lastFen = fen;
-    sendToContentScript("fenFromPage", { fen, state});
+    sendToContentScript("fenFromPage", { fen, state });
 
     let markings = getAllMarkings(); // our markings
     if (isThereAnyMarkingChange(markings)) {
@@ -46,11 +48,18 @@ function getAllMarkings() {
       // node is an id of another user not us.
       continue;
 
-    markings.push({
-      from: marking.data.from,
-      to: marking.data.to,
-      type: marking.type,
-    });
+    if (marking.type === "arrow") {
+      markings.push({
+        from: marking.data.from,
+        to: marking.data.to,
+        type: marking.type,
+      });
+    } else if (marking.type === "highlight") {
+      markings.push({
+        highlight: marking.data.square,
+        type: marking.type,
+      });
+    }
   }
   return markings;
 }
@@ -62,12 +71,17 @@ document.addEventListener("markingsFromBackground", function (e) {
   for (let marking of markings) {
     clearMarkingsById(marking.from_id);
   }
-  if (!markings.length){
-    clearAllNotMeMarkings()
+  if (!markings.length) {
+    clearAllNotMeMarkings();
   }
-  
+
   for (let marking of markings) {
-    addArrow(marking.from, marking.to, marking.from_id);
+    if (marking.type === "highlight") {
+      addHighlight(marking.highlight, marking.from_id);
+    } else if (marking.type === "arrow") {
+      addArrow(marking.from, marking.to, marking.from_id);
+
+    }
   }
 });
 
@@ -115,4 +129,14 @@ function addArrow(from, to, from_id) {
   arrow.data.opacity = 0.4;
 
   game.markings.addOne(arrow);
+}
+
+function addHighlight(highlight, from_id) {
+  let game = document.querySelector(".board").game;
+
+  let highlightMarking = game.markings.factory.buildStandardAnalysisHighlight(
+    highlight
+  );
+  highlightMarking.node = from_id;
+  game.markings.addOne(highlightMarking);
 }
