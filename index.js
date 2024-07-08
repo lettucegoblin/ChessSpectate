@@ -3,6 +3,8 @@ const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
 require('dotenv').config();
+const path = require('path');
+
 
 const app = express();
 // cors
@@ -128,6 +130,15 @@ io.on("connection", (socket) => {
     });
     */
   });
+});
+
+// Serve static files from the dist directory
+const distPath = path.join(__dirname, 'chess-spectate-client', 'build');
+app.use(express.static(distPath));
+
+// Catch-all route to serve the Svelte app for any route not handled by your API
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 server.listen(process.env.PORT || 3000, () => {
