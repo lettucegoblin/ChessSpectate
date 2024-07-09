@@ -233,10 +233,6 @@
 
 <div class="min-h-screen bg-gray-900 text-white">
   <div class="container mx-auto p-4">
-    <button
-      class="bg-gray-800 text-white px-4 py-2 rounded-md"
-      on:click={() => addHighlight("e2", "green")}>Add Highlight</button
-    >
     <label for="rooms" class="block text-sm font-medium text-gray-300"
       >Select a room:</label
     >
@@ -256,7 +252,7 @@
     <div
       class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4"
     >
-      <div class="text-center mb-4">
+      <div class="text-center mb-4 {playingAs == 1 ? "text-black bg-white" : "text-white bg-black"} p-2 rounded-md mr-5">
         Playing as {playingAs == 1 ? "White" : "Black"} <!-- 1 is white, 2 is black -->
       </div>
       <!-- Chessground component -->
