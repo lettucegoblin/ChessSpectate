@@ -5,7 +5,7 @@
   import type { DrawShape } from "chessground/draw";
   const apiUrl = import.meta.env.VITE_API_URL;
   console.log("API URL:", apiUrl);
-
+  import type {Key} from "chessground/types"
   let chessground: Chessground;
   let shapes: DrawShape[] = [];
 
@@ -53,6 +53,7 @@
   // Chess
   let orientation: Orientation = "white";
   let fen: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  let lastMove: Key[];
 
   onMount(() => {
     // Chess Events
@@ -110,6 +111,8 @@
 
       // update playingAs with state.playingAs
       playingAs = state.playingAs;
+      console.log(state.selectedNode.san)
+      lastMove = [state.selectedNode.from, state.selectedNode.to];
     });
 
     // Handle incoming marking data
@@ -257,7 +260,7 @@
         Playing as {playingAs == 1 ? "White" : "Black"} <!-- 1 is white, 2 is black -->
       </div>
       <!-- Chessground component -->
-      <Chessground bind:this={chessground} {fen} {orientation} />
+      <Chessground bind:this={chessground} {fen} {orientation} {lastMove}/>
     </div>
   </div>
 </div>
