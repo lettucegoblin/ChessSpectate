@@ -83,6 +83,7 @@
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       randomizationFactor: 0,
+      path: "/chessSpectate/socket.io",
     });
 
     // Fetch available rooms from the relay server

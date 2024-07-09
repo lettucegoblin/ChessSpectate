@@ -27,6 +27,7 @@
 	"dependencies": {
 		"@sveltejs/adapter-static": "^3.0.2",
 		"socket.io-client": "^4.7.5",
-		"svelte-chessground": "^2.0.3"
+		"svelte-chessground": "^2.0.3",
+		"tw-elements": "^2.0.0"
 	}
 }

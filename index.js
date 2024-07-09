@@ -4,7 +4,7 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 require('dotenv').config();
 const path = require('path');
-
+console.log(process.env); // Check if PORT is set correctly
 
 const app = express();
 // cors
@@ -14,11 +14,12 @@ const server = http.createServer(app);
 // Configure Socket.io to use CORS
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // Replace with your Svelte client origin
+    origin: "*",
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
   },
+  path: "/chessSpectate/socket.io"
 });
 
 let rooms = {};
@@ -136,10 +137,13 @@ io.on("connection", (socket) => {
 const distPath = path.join(__dirname, 'chess-spectate-client', 'build');
 app.use(express.static(distPath));
 
+
 // Catch-all route to serve the Svelte app for any route not handled by your API
-app.get('*', (req, res) => {
+app.get('/chessSpectate/', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
+
+app.use('/chessSpectate', express.static(distPath));
 
 server.listen(process.env.PORT || 3000, () => {
   console.log(`Relay server listening on port ${process.env.PORT || 3000}`);
