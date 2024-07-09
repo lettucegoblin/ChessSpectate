@@ -10,7 +10,8 @@
   ],
   "host_permissions": [
     "*://*.chess.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://goblinpowered/*"
   ],
   "background": {
     "service_worker": "background.js"

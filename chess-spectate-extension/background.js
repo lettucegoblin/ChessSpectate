@@ -4,12 +4,13 @@ importScripts("libs/socket.io.min.js");
 console.log("Background script started");
 
 // Establish WebSocket connection
-const socket = io("http://localhost:3000", {
+const socket = io("https://goblinpowered.com/", {
   transports: ["websocket"],
   reconnection: true, // Enable automatic reconnection
   reconnectionAttempts: Infinity, // Retry forever
   reconnectionDelay: 1000, // Initial delay of 1 second
   reconnectionDelayMax: 5000, // Maximum delay of 5 seconds
+  path: "/chessSpectate/socket.io",
 });
 
 socket.on("connect", () => {
