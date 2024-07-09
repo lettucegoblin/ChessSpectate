@@ -5,7 +5,7 @@
   import type { DrawShape } from "chessground/draw";
   const apiUrl = import.meta.env.VITE_API_URL;
   console.log("API URL:", apiUrl);
-  import type {Key} from "chessground/types"
+  import type { Key } from "chessground/types";
   let chessground: Chessground;
   let shapes: DrawShape[] = [];
 
@@ -96,6 +96,20 @@
     socket.on("roomsList", (availableRooms: Room[]) => {
       console.log("availableRooms: ", availableRooms);
       rooms = availableRooms;
+      if(rooms.length > 0) {
+        selectedRoom = rooms[0].id;
+        joinRoom(selectedRoom);
+      }
+    });
+
+    socket.on('roomDeleted', (room: string) => {
+      rooms = rooms.filter(r => r.id != room);
+      if (room == selectedRoom) {
+        selectedRoom = "";
+        currentRoom = "";
+      }
+      
+      socket.emit("leaveRoom", room);
     });
 
     // Handle incoming FEN data
@@ -111,7 +125,7 @@
 
       // update playingAs with state.playingAs
       playingAs = state.playingAs;
-      console.log(state.selectedNode.san)
+      console.log(state.selectedNode.san);
       lastMove = [state.selectedNode.from, state.selectedNode.to];
     });
 
@@ -233,30 +247,51 @@
 
 <div class="min-h-screen bg-gray-900 text-white">
   <div class="container mx-auto p-4">
-    <label for="rooms" class="block text-sm font-medium text-gray-300"
-      >Select a room:</label
-    >
-    <select
-      id="rooms"
-      bind:value={selectedRoom}
-      on:change={() => joinRoom(selectedRoom)}
-      class="block w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300"
-    >
-      {#each rooms as room}
-        <option value={room.id} class="bg-gray-800 text-gray-300"
-          >{room.name}</option
-        >
-      {/each}
-    </select>
-
+    <div class={rooms.length == 0 ? "hidden" : "block"}>
+      <label for="rooms" class="block text-sm font-medium text-gray-300">
+        Select a public room to spectate({rooms.length}):
+      </label>
+      <select
+        id="rooms"
+        bind:value={selectedRoom}
+        on:change={() => joinRoom(selectedRoom)}
+        class="block w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300"
+      >
+        {#each rooms as room}
+          <option value={room.id} class="bg-gray-800 text-gray-300"
+            >{room.name}</option
+          >
+        {/each}
+      </select>
+    </div>
     <div
-      class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4"
+      class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4 {currentRoom == "" ? 'hidden' : 'block'}"
     >
-      <div class="text-center mb-4 {playingAs == 1 ? "text-black bg-white" : "text-white bg-black"} p-2 rounded-md mr-5">
-        Playing as {playingAs == 1 ? "White" : "Black"} <!-- 1 is white, 2 is black -->
+      <div
+        class="text-center mb-4 {playingAs == 1
+          ? 'text-black bg-white'
+          : 'text-white bg-black'} p-2 rounded-md mr-5"
+      >
+        Playing as {playingAs == 1 ? "White" : "Black"}
+        <!-- 1 is white, 2 is black -->
       </div>
       <!-- Chessground component -->
-      <Chessground bind:this={chessground} {fen} {orientation} {lastMove}/>
+      <Chessground bind:this={chessground} {fen} {orientation} {lastMove} />
+    </div>
+    <div class="text-center {rooms.length > 0 ? 'hidden' : 'block'}">
+      <h2>No public rooms available.</h2>
+      <br />
+      Host a game instructions: <br />
+      1. Get the extension from
+      <a
+        href="https://chrome.google.com/webstore/detail/chess-spectate/"
+        class="text-blue-400">here</a
+      > <br />
+      2. Visit <a href="https://chess.com" class="text-blue-400">chess.com</a>
+      to play a game. <br />
+      3. Click on the extension icon and click on "Host Game" <br />
+      4. Decide on public or private game. <br />
+      5. Share the room code with your friends. <br />
     </div>
   </div>
 </div>

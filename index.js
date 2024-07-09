@@ -119,8 +119,9 @@ io.on("connection", (socket) => {
       if (rooms[room]) {
         if (room.roomCreator === socket.id) {
           // disconnect all users from the room and delete the room
-          io.to(room).emit("roomDeleted", room);
           delete rooms[room];
+          io.to(room).emit("roomDeleted", room);
+          
           emitRoomsList();
         } else {
           delete rooms[room].markings[socket.id];
