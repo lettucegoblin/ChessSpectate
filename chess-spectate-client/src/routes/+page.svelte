@@ -254,7 +254,7 @@
       class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4"
     >
       <div class="text-center mb-4">
-        Playing as {playingAs ? "White" : "Black"}
+        Playing as {playingAs == 1 ? "White" : "Black"} <!-- 1 is white, 2 is black -->
       </div>
       <!-- Chessground component -->
       <Chessground bind:this={chessground} {fen} {orientation} />

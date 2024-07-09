@@ -1,24 +1,42 @@
 let ourMarkings = [];
+let notOurMarkings = [];
+let eventsAdded = false;
 
-setInterval(() => {
+function addEvents(){
+  let board = document.querySelector(".board");
+  board.addEventListener("mouseup", () => {
+    console.log("mousemouse up");
+    drawMarkings(notOurMarkings);
+  });
+
+  eventsAdded = true;
+}
+function handleFen(){
   let game = document.querySelector(".board").game;
   let state = JSON.parse(
     JSON.stringify(document.querySelector(".board").state)
   );
+  let fen = game.getFEN();
 
-  if (game) {
-    //if(window.lastFen === game.fen) return;
-    let fen = game.getFEN();
+  window.lastFen = fen;
+  sendToContentScript("fenFromPage", { fen, state });
+}
 
-    window.lastFen = fen;
-    sendToContentScript("fenFromPage", { fen, state });
-
-    let markings = getAllMarkings(); // our markings
-    if (isThereAnyMarkingChange(markings)) {
-      ourMarkings = markings;
-      sendToContentScript("markingsFromPage", { markings });
-    }
+function handleMarkings(){
+  let markings = getAllMarkings(); // our markings
+  if (isThereAnyMarkingChange(markings)) {
+    ourMarkings = markings;
+    sendToContentScript("markingsFromPage", { markings });
   }
+}
+
+setInterval(() => {
+  let game = document.querySelector(".board").game;
+  if (game) {
+    if(!eventsAdded) addEvents();
+    handleFen();
+    handleMarkings();
+  } 
 }, 700);
 
 function isThereAnyMarkingChange(markings) {
@@ -66,8 +84,13 @@ function getAllMarkings() {
 
 document.addEventListener("markingsFromBackground", function (e) {
   console.log("Markings from background:", e.detail.markings);
-  let markings = e.detail.markings;
 
+  let markings = e.detail.markings;
+  notOurMarkings = markings;
+  drawMarkings(markings);
+});
+
+function drawMarkings(markings) {
   for (let marking of markings) {
     clearMarkingsById(marking.from_id);
   }
@@ -80,10 +103,9 @@ document.addEventListener("markingsFromBackground", function (e) {
       addHighlight(marking.highlight, marking.from_id);
     } else if (marking.type === "arrow") {
       addArrow(marking.from, marking.to, marking.from_id);
-
     }
   }
-});
+}
 
 function clearAllNotMeMarkings() {
   let game = document.querySelector(".board").game;
@@ -134,9 +156,8 @@ function addArrow(from, to, from_id) {
 function addHighlight(highlight, from_id) {
   let game = document.querySelector(".board").game;
 
-  let highlightMarking = game.markings.factory.buildStandardAnalysisHighlight(
-    highlight
-  );
+  let highlightMarking =
+    game.markings.factory.buildStandardAnalysisHighlight(highlight);
   highlightMarking.node = from_id;
   game.markings.addOne(highlightMarking);
 }
