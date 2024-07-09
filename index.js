@@ -2,8 +2,8 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-require('dotenv').config();
-const path = require('path');
+require("dotenv").config();
+const path = require("path");
 console.log(process.env); // Check if PORT is set correctly
 
 const app = express();
@@ -19,7 +19,7 @@ const io = socketIo(server, {
     allowedHeaders: ["Content-Type"],
     credentials: true,
   },
-  path: "/chessSpectate/socket.io"
+  path: "/chessSpectate/socket.io",
 });
 
 let rooms = {};
@@ -117,33 +117,30 @@ io.on("connection", (socket) => {
     // remove markings
     for (const room of Object.keys(rooms)) {
       if (rooms[room]) {
-        delete rooms[room].markings[socket.id];
-        sendMarkingsData(room);
+        if (room.roomCreator === socket.id) {
+          // disconnect all users from the room and delete the room
+          io.to(room).emit("roomDeleted", room);
+          delete rooms[room];
+          emitRoomsList();
+        } else {
+          delete rooms[room].markings[socket.id];
+          sendMarkingsData(room);
+        }
       }
     }
-    /*
-    const rooms = socket.rooms;
-    rooms.forEach((room) => {
-      if (rooms[room]) {
-        delete rooms[room];
-        io.emit("roomsList", Object.keys(rooms));
-      }
-    });
-    */
   });
 });
 
 // Serve static files from the dist directory
-const distPath = path.join(__dirname, 'chess-spectate-client', 'build');
+const distPath = path.join(__dirname, "chess-spectate-client", "build");
 app.use(express.static(distPath));
 
-
 // Catch-all route to serve the Svelte app for any route not handled by your API
-app.get('/chessSpectate/', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
+app.get("/chessSpectate/", (req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
 });
 
-app.use('/chessSpectate', express.static(distPath));
+app.use("/chessSpectate", express.static(distPath));
 
 server.listen(process.env.PORT || 3000, () => {
   console.log(`Relay server listening on port ${process.env.PORT || 3000}`);
