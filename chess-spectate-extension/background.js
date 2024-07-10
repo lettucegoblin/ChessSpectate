@@ -4,7 +4,7 @@ importScripts("libs/socket.io.min.js");
 console.log("Background script started");
 tabs_chess_closed = {};
 // Establish WebSocket connection
-const socket = io("http://localhost:6559/", {
+const socket = io("https://goblinpowered.com/", {
   transports: ["websocket"],
   reconnection: true, // Enable automatic reconnection
   reconnectionAttempts: Infinity, // Retry forever

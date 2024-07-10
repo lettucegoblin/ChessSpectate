@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import io, { Socket } from "socket.io-client";
   import { Chessground } from "svelte-chessground"; // https://github.com/lichess-org/chessground/blob/master/src/config.ts
-  import type { DrawShape } from "chessground/draw";
+  import type { DrawShape, DrawCurrent } from "chessground/draw";
   const apiUrl = import.meta.env.VITE_API_URL;
   console.log("API URL:", apiUrl);
   import type { Key } from "chessground/types";
@@ -79,7 +79,6 @@
         fen = oldfen;
         refreshMarkings();
       }, 0);
-      
     };
 
     // Initialize socket connection, infinite reconnect
@@ -127,6 +126,11 @@
       console.log(
         `FEN Data: ${incomingFen} ${state.isFlipped} ${state.playingAs}`
       );
+
+      if (fen != incomingFen) {
+        clearShapes();
+        refreshMarkings()
+      }
       fen = incomingFen;
 
       // update orientation with state.isFlipped
@@ -156,8 +160,7 @@
         }
       }
       for (const shape of userShapes) {
-        if (shape.dest == undefined)
-          addHighlight(shape.orig, "purple");
+        if (shape.dest == undefined) addHighlight(shape.orig, "purple");
         else addArrow(shape.orig, shape.dest, shape.brush);
       }
       console.log("state", chessground.getState());
