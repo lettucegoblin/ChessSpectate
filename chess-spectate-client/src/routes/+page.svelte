@@ -55,16 +55,20 @@
   let fen: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   let lastMove: Key[];
 
+  function refreshMarkings() {
+    let userShapes = allShapesThatAreMe(chessground.getState());
+    let markingsData = chessgroundShapesToMarkings(userShapes);
+    socket.emit("markingsData", {
+      room: selectedRoom,
+      markings: markingsData,
+    });
+  }
+
   onMount(() => {
     // Chess Events
     chessground.getState().drawable.onChange = (shapes: DrawShape[]) => {
-      console.log("Chessground state changed", shapes);
-      let userShapes = allShapesThatAreMe(chessground.getState());
-      let markingsData = chessgroundShapesToMarkings(userShapes);
-      socket.emit("markingsData", {
-        room: selectedRoom,
-        markings: markingsData,
-      });
+      console.log("Chessground drawable changed", shapes);
+      refreshMarkings();
     };
 
     chessground.getState().events.change = () => {
@@ -73,7 +77,9 @@
       fen = chessground.getFen();
       setTimeout(() => {
         fen = oldfen;
+        refreshMarkings();
       }, 0);
+      
     };
 
     // Initialize socket connection, infinite reconnect
@@ -151,7 +157,7 @@
       }
       for (const shape of userShapes) {
         if (shape.dest == undefined)
-          addHighlight(shape.orig, "purple", socket.id);
+          addHighlight(shape.orig, "purple");
         else addArrow(shape.orig, shape.dest, shape.brush);
       }
       console.log("state", chessground.getState());

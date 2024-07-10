@@ -82,10 +82,6 @@ io.on("connection", (socket) => {
     handleRoomLeave(socket);
   });
 
-  socket.on("getMarkings", (room) => {
-    sendMarkingsData(room);
-  });
-
   // Send available rooms to the client
   socket.on("requestRooms", emitRoomsList);
 
