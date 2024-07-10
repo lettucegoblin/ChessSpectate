@@ -11,6 +11,7 @@
   "host_permissions": [
     "*://*.chess.com/*",
     "http://localhost:3000/*",
+    "http://localhost:6559/*",
     "https://goblinpowered/*"
   ],
   "background": {

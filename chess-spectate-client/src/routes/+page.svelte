@@ -96,19 +96,22 @@
     socket.on("roomsList", (availableRooms: Room[]) => {
       console.log("availableRooms: ", availableRooms);
       rooms = availableRooms;
-      if(rooms.length > 0) {
+      if (rooms.length > 0) {
         selectedRoom = rooms[0].id;
         joinRoom(selectedRoom);
+      } else {
+        selectedRoom = "";
+        currentRoom = "";
       }
     });
 
-    socket.on('roomDeleted', (room: string) => {
-      rooms = rooms.filter(r => r.id != room);
+    socket.on("roomDeleted", (room: string) => {
+      rooms = rooms.filter((r) => r.id != room);
       if (room == selectedRoom) {
         selectedRoom = "";
         currentRoom = "";
       }
-      
+
       socket.emit("leaveRoom", room);
     });
 
@@ -265,7 +268,10 @@
       </select>
     </div>
     <div
-      class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4 {currentRoom == "" ? 'hidden' : 'block'}"
+      class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4 {currentRoom ==
+      ''
+        ? 'hidden'
+        : 'block'}"
     >
       <div
         class="text-center mb-4 {playingAs == 1

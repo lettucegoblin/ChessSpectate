@@ -2,9 +2,9 @@
 importScripts("libs/socket.io.min.js");
 
 console.log("Background script started");
-
+tabs_chess_closed = {};
 // Establish WebSocket connection
-const socket = io("https://goblinpowered.com/", {
+const socket = io("http://localhost:6559/", {
   transports: ["websocket"],
   reconnection: true, // Enable automatic reconnection
   reconnectionAttempts: Infinity, // Retry forever
@@ -34,6 +34,14 @@ socket.on("markingsData", (markings, room) => {
   chrome.tabs.sendMessage(parseInt(room), { message: "markingsData", markings });
 }); 
 
+// on tab close
+chrome.tabs.onRemoved.addListener((tabId) => {
+  console.log(`Tab with id ${tabId} was closed`);
+  tabs_chess_closed[tabId] = true;
+
+  socket.emit("leaveRoom", tabId);
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "sendFen") {
     const { tabId, fen, state } = request.payload;
@@ -61,8 +69,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         files: ["contentScript.js"],
       },
       () => {
-        console.log("Content script injected");
+        
+        console.log("Content script injected", tab.discarded, tabId);
         // Create a room for this tab ID
+        if(tabs_chess_closed[tabId]) {
+          delete tabs_chess_closed[tabId];
+          return;
+        }
         socket.emit("createRoom", tabId);
         socket.emit("joinRoom", tabId);
         chrome.tabs.sendMessage(

@@ -4,7 +4,6 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 require("dotenv").config();
 const path = require("path");
-console.log(process.env); // Check if PORT is set correctly
 
 const app = express();
 // cors
@@ -29,7 +28,9 @@ function getRoomsList() {
 }
 
 function emitRoomsList() {
-  io.emit("roomsList", getRoomsList());
+  let roomsList = getRoomsList();
+  console.log("roomsList", roomsList);
+  io.emit("roomsList", roomsList);
 }
 
 function getRoomNames() {
@@ -47,8 +48,43 @@ function sendMarkingsData(room, socketid = "") {
   io.to(room).emit("markingsData", markingData, room);
 }
 
+function handleRoomLeave(socket) {
+  // remove markings
+  for (const room of Object.keys(rooms)) {
+    if (rooms[room].roomCreator === socket.id) {
+      // disconnect all users from the room and delete the room
+      //io.to(room).emit("roomDeleted", room);
+      // loop through all sockets in the room and remove them
+      console.log("roomCreator", room, rooms[room].roomCreator, socket.id);
+      for (const [id, socket] of io.of("/").sockets) {
+        if (socket.rooms[room]) {
+          socket.leave(room);
+        }
+      }
+      rooms[room] = undefined
+      delete rooms[room];
+      
+      emitRoomsList();
+      
+    } else {
+      delete rooms[room].markings[socket.id];
+      sendMarkingsData(room);
+    }
+  }
+}
+
 io.on("connection", (socket) => {
   console.log("New client connected");
+
+  // Handle disconnecting clients
+  socket.on("disconnect", (socket) => {
+    console.log("Client disconnected");
+    handleRoomLeave(socket);
+  });
+
+  socket.on("getMarkings", (room) => {
+    sendMarkingsData(room);
+  });
 
   // Send available rooms to the client
   socket.on("requestRooms", emitRoomsList);
@@ -74,7 +110,7 @@ io.on("connection", (socket) => {
   // Leave a specific room
   socket.on("leaveRoom", (room) => {
     console.log("leaveRoom", room);
-    socket.leave(room);
+    handleRoomLeave(socket);
   });
 
   // Relay FEN data to the appropriate room
@@ -109,26 +145,6 @@ io.on("connection", (socket) => {
     };
     emitRoomsList();
     console.log("createRoom", tabId, rooms);
-  });
-
-  // Handle disconnecting from a room
-  socket.on("disconnecting", () => {
-    const rooms = socket.rooms;
-    // remove markings
-    for (const room of Object.keys(rooms)) {
-      if (rooms[room]) {
-        if (room.roomCreator === socket.id) {
-          // disconnect all users from the room and delete the room
-          delete rooms[room];
-          io.to(room).emit("roomDeleted", room);
-          
-          emitRoomsList();
-        } else {
-          delete rooms[room].markings[socket.id];
-          sendMarkingsData(room);
-        }
-      }
-    }
   });
 });
 
