@@ -129,7 +129,7 @@
 
       if (fen != incomingFen) {
         clearShapes();
-        refreshMarkings()
+        refreshMarkings();
       }
       fen = incomingFen;
 
@@ -255,67 +255,80 @@
       chessground.setShapes(shapes);
     }
   }
-</script>
 
-<div class="min-h-screen bg-gray-900 text-white">
-  <div class="container mx-auto p-4">
-    <div class={rooms.length == 0 ? "hidden" : "block"}>
-      <label for="rooms" class="block text-sm font-medium text-gray-300">
-        Select a public room to spectate({rooms.length}):
-      </label>
-      <select
-        id="rooms"
-        bind:value={selectedRoom}
-        on:change={() => joinRoom(selectedRoom)}
-        class="block w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300"
-      >
-        {#each rooms as room}
-          <option value={room.id} class="bg-gray-800 text-gray-300"
-            >{room.name}</option
-          >
-        {/each}
-      </select>
-    </div>
-    <div
-      class="mt-4 chessboard flex justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4 {currentRoom ==
-      ''
-        ? 'hidden'
-        : 'block'}"
+  function clearMyShapes() {
+    clearShapes();
+    refreshMarkings();
+  }
+</script>
+<div class="bg-gray-900 min-h-screen">
+<div class="container mx-auto p-4 min-h-screen text-white">
+  <div class={rooms.length == 0 ? "hidden" : "block"}>
+    <label for="rooms" class="block text-sm font-medium text-gray-300">
+      Select a public room to spectate({rooms.length}):
+    </label>
+    <select
+      id="rooms"
+      bind:value={selectedRoom}
+      on:change={() => joinRoom(selectedRoom)}
+      class="block w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300"
     >
+      {#each rooms as room}
+        <option value={room.id} class="bg-gray-800 text-gray-300"
+          >{room.name}</option
+        >
+      {/each}
+    </select>
+  </div>
+
+  <div
+    class="chessboard flex flex-col justify-center items-center bg-gray-800 border border-gray-700 rounded-md p-4 {currentRoom ==
+    ''
+      ? 'hidden'
+      : 'block'}"
+  >
+    <div class="flex justify-between items-center w-full mb-4">
       <div
-        class="text-center mb-4 {playingAs == 1
+        class="{playingAs == 1
           ? 'text-black bg-white'
-          : 'text-white bg-black'} p-2 rounded-md mr-5"
+          : 'text-white bg-black'} p-2 rounded-md"
       >
         Playing as {playingAs == 1 ? "White" : "Black"}
-        <!-- 1 is white, 2 is black -->
       </div>
-      <!-- Chessground component -->
-      <Chessground bind:this={chessground} {fen} {orientation} {lastMove} />
+      <button
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        on:click={clearMyShapes}
+      >
+        Clear My Shapes
+      </button>
     </div>
-    <div class="text-center {rooms.length > 0 ? 'hidden' : 'block'}">
-      <h2>No public rooms available.</h2>
-      <br />
-      Host a game instructions: <br />
-      1. Get the extension from
-      <a
-        href="https://chrome.google.com/webstore/detail/chess-spectate/"
-        class="text-blue-400">here</a
-      > <br />
-      2. Visit <a href="https://chess.com" class="text-blue-400">chess.com</a>
-      to play a game. <br />
-      3. Click on the extension icon and click on "Host Game" <br />
-      4. Decide on public or private game. <br />
-      5. Share the room code with your friends. <br />
-    </div>
+    <!-- Chessground component -->
+    <Chessground bind:this={chessground} {fen} {orientation} {lastMove} />
+  </div>
+
+  <div class="text-center {rooms.length > 0 ? 'hidden' : 'block'}">
+    <h2>No public rooms available.</h2>
+    <br />
+    Host a game instructions: <br />
+    1. Get the extension from
+    <a
+      href="https://chrome.google.com/webstore/detail/chess-spectate/"
+      class="text-blue-400">here</a
+    >
+    <br />
+    2. Visit <a href="https://chess.com" class="text-blue-400">chess.com</a>
+    to play a game. <br />
+    3. Click on the extension icon and click on "Host Game" <br />
+    4. Decide on public or private game. <br />
+    5. Share the room code with your friends. <br />
   </div>
 </div>
-
+</div>
 <style>
   .container {
     height: 100vh;
   }
   .chessboard {
-    align-items: flex-start;
+    align-items: center;
   }
 </style>
